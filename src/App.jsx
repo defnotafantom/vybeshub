@@ -1,13 +1,11 @@
-// App.jsx
 import React from 'react';
-import { Routes, Route } from 'react-router-dom'; // Rimuovi BrowserRouter da qui
+import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
-import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -24,11 +22,16 @@ function App() {
           </PrivateRoute>
         }
       />
+      {/* Opzionale: route fallback */}
+      <Route path="*" element={<HomePage />} />
     </Routes>
   );
 }
 
 export default App;
+
+
+
 
 
 
