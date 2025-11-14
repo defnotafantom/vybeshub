@@ -1,41 +1,26 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import DashboardPage from './pages/DashboardPage';
-import LoginPage from './pages/LoginPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import PrivateRoute from './components/PrivateRoute';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import DashboardLayout from "@/components/DashboardLayout";
+import HomePage from "@/pages/HomePage";
 
-function App() {
+export default function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) return null; // opzionale: loader
+
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* Homepage pubblica */}
+      <Route path="/homepage" element={<HomePage />} />
+
+      {/* Dashboard protetta */}
       <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute>
-            <DashboardPage />
-          </PrivateRoute>
-        }
+        path="/dashboard/*"
+        element={user ? <DashboardLayout /> : <Navigate to="/homepage" replace />}
       />
-      {/* Opzionale: route fallback */}
-      <Route path="*" element={<HomePage />} />
+
+      {/* Redirect root hash a homepage */}
+      <Route path="/" element={<Navigate to="/homepage" replace />} />
     </Routes>
   );
 }
-
-export default App;
-
-
-
-
-
-
-
-
-
-
