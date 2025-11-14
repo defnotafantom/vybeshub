@@ -1,0 +1,69 @@
+/* styles/registerForm.css */
+
+/* Container del form */
+.register-container {
+    @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-sky-100;
+  }
+  
+  /* Header del form */
+  .register-header {
+    @apply flex items-center mb-6;
+  }
+  
+  .register-header h2 {
+    @apply text-2xl font-bold text-slate-800 text-center flex-grow;
+  }
+  
+  /* Pulsanti di ruolo */
+  .role-button {
+    @apply w-32 py-6 font-semibold text-white rounded-lg transition-all duration-200;
+  }
+  
+  .role-button-artist {
+    @apply bg-sky-500 hover:bg-sky-600;
+  }
+  
+  .role-button-stager {
+    @apply bg-blue-600 hover:bg-blue-700;
+  }
+  
+  /* Input fields */
+  .form-input {
+    @apply w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500;
+  }
+  
+  /* Label fields */
+  .form-label {
+    @apply text-sm font-medium text-slate-700;
+  }
+  
+  /* Button submit */
+  .submit-button {
+    @apply w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold py-3 mt-4 rounded-lg hover:opacity-90 transition-all duration-200;
+  }
+  
+  /* Select Trigger */
+  .select-trigger {
+    @apply w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500;
+  }
+  
+  /* Popup Toasts (usando useToast) */
+  .toast-success {
+    @apply bg-green-500 text-white px-4 py-2 rounded-md shadow-md;
+  }
+  
+  .toast-error {
+    @apply bg-red-500 text-white px-4 py-2 rounded-md shadow-md;
+  }
+  
+  /* Responsive tweaks */
+  @media (max-width: 640px) {
+    .grid-cols-2 {
+      @apply grid-cols-1 gap-4;
+    }
+  
+    .role-button {
+      @apply w-full py-4;
+    }
+  }
+  
