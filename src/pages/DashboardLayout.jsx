@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home as HomeIcon, Map as MapIcon, Lightbulb as LightbulbIcon, Users as UsersIcon, 
-  User as UserIcon, Plus, MessageSquare as InboxIcon, Heart, MessageCircle, Share2, Info as InfoIcon 
+  User as UserIcon, Inbox as InboxIcon, Info as InfoIcon 
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabaseClient";
@@ -18,7 +18,7 @@ import ProfileSection from "@/components/ProfileSection";
 import InfoSection from "@/components/InfoSection";
 
 const MapViewItalia = lazy(() => import("@/components/MapViewItalia"));
-const MapWrapper = lazy(() => import("@/components/MapWrapper"));
+
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +29,7 @@ const DashboardLayout = () => {
   const [artTags, setArtTags] = useState([]);
   const [filterTag, setFilterTag] = useState("");
   const [profile, setProfile] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // controlla il popup
 
   if (!user) return <Navigate to="/homepage" replace />;
 
@@ -40,22 +41,30 @@ const DashboardLayout = () => {
   // --- Load posts realtime ---
   useEffect(() => {
     const fetchPosts = async () => {
-      const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (!error) setPosts(data || []);
     };
     fetchPosts();
+
     const channel = supabase.channel("posts")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, (payload) =>
         setPosts(current => [payload.new, ...current])
       )
       .subscribe();
+
     return () => supabase.removeChannel(channel);
   }, []);
 
   // --- Load Art Tags ---
   useEffect(() => {
     const fetchTags = async () => {
-      const { data, error } = await supabase.from("art_tag").select("id, name").order("name", { ascending: true });
+      const { data, error } = await supabase
+        .from("art_tag")
+        .select("id, name")
+        .order("name", { ascending: true });
       if (!error) setArtTags(data || []);
     };
     fetchTags();
@@ -64,7 +73,11 @@ const DashboardLayout = () => {
   // --- Load Profile ---
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
       if (!error) setProfile(data);
     };
     fetchProfile();
@@ -118,21 +131,29 @@ const DashboardLayout = () => {
   );
 
   const sectionComponents = {
-    Home: <HomeSection posts={posts} artTags={artTags} filterTag={filterTag} setFilterTag={setFilterTag} user={user} uploadFile={uploadFile} />,
+    Home: <HomeSection posts={posts} artTags={artTags} filterTag={filterTag} setFilterTag={setFilterTag} user={user} uploadFile={uploadFile} setIsPopupOpen={setIsPopupOpen} />,
     Mappa: (
       <div className="w-full h-[80vh] md:h-[600px]">
-      <MapViewItalia
-  markers={[
-    { coordinates: [12.4964, 41.9028], label: "Roma" },
-    { coordinates: [9.1900, 45.4642], label: "Milano" },
-    { coordinates: [11.2558, 43.7696], label: "Firenze" },
-  ]}
-/>
-    </div>
+        <MapViewItalia
+          markers={[
+            { coordinates: [12.4964, 41.9028], label: "Roma" },
+            { coordinates: [9.1900, 45.4642], label: "Milano" },
+            { coordinates: [11.2558, 43.7696], label: "Firenze" },
+          ]}
+        />
+      </div>
     ),
     Opportunità: <OpportunitiesSection user={user} />,
     Community: <div className="flex justify-center mt-10">Community Section</div>,
-    Profilo: <ProfileSection profile={profile} uploadFile={uploadFile} />,
+    Profilo: (
+      <ProfileSection
+        profile={profile}
+        uploadFile={uploadFile}
+        currentUser={user}                  // l’utente loggato
+        isMyProfile={profile?.id === user?.id}  // controlla se è il tuo profilo
+        setEditOpen={() => setSection("EditProfile")} // se usi un modal
+      />
+    ),
     Inbox: <InboxSection user={user} uploadFile={uploadFile} />,
     Info: <InfoSection />,
   };
@@ -141,7 +162,7 @@ const DashboardLayout = () => {
     <div className="min-h-screen w-full relative bg-gradient-to-br from-gray-100 via-white to-gray-200 overflow-hidden flex">
       <div className="absolute inset-0 -z-10 opacity-60"><WaveAnimation /></div>
       <div className="hidden md:flex fixed top-0 left-0 h-full z-30">{SidebarContent}</div>
-      <div className="flex-1 flex flex-col gap-6 overflow-auto p-4 transition-all duration-300 ml-64">
+      <div className={`flex-1 flex flex-col gap-6 p-4 transition-all duration-300 ml-64 ${isPopupOpen ? "overflow-hidden" : "overflow-auto"}`}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={section} initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} transition={{duration:0.3}}>
             {sectionComponents[section]}
@@ -153,3 +174,4 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
+
