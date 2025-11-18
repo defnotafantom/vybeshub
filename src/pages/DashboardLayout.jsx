@@ -130,6 +130,16 @@ const DashboardLayout = () => {
     </div>
   );
 
+  const titles = {
+    Home: "Home",
+    Mappa: "Mappa",
+    Opportunità: "Opportunità",
+    Community: "Community",
+    Profilo: "Il mio profilo",
+    Inbox: "Inbox",
+    Info: "Informazioni"
+  };
+
   const sectionComponents = {
     Home: <HomeSection posts={posts} artTags={artTags} filterTag={filterTag} setFilterTag={setFilterTag} user={user} uploadFile={uploadFile} setIsPopupOpen={setIsPopupOpen} />,
     Mappa: (
@@ -162,13 +172,17 @@ const DashboardLayout = () => {
     <div className="min-h-screen w-full relative bg-gradient-to-br from-gray-100 via-white to-gray-200 overflow-hidden flex">
       <div className="absolute inset-0 -z-10 opacity-60"><WaveAnimation /></div>
       <div className="hidden md:flex fixed top-0 left-0 h-full z-30">{SidebarContent}</div>
-      <div className={`flex-1 flex flex-col gap-6 p-4 transition-all duration-300 ml-64 ${isPopupOpen ? "overflow-hidden" : "overflow-auto"}`}>
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={section} initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} transition={{duration:0.3}}>
-            {sectionComponents[section]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <div className={`flex-1 flex flex-col gap-2 p-4 transition-all duration-300 ml-64 ${isPopupOpen ? "overflow-hidden" : "overflow-auto"}`}>
+      <div className="w-full flex justify-center mt-2 text-lg font-bold text-2xl text-black-900 mt-4 tracking-tight">
+    {titles[section]}
+  </div>
+  <AnimatePresence mode="wait" initial={false}>
+    <motion.div key={section} initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} transition={{duration:0.3}}>
+      {sectionComponents[section]}
+    </motion.div>
+  </AnimatePresence>
+
+</div>
     </div>
   );
 };

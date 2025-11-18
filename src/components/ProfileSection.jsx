@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useDebounce } from "use-debounce";
+import { Plus } from "lucide-react";
 
 const emojis = ["😀","😂","😍","🥳","🤯"];
 const userArtTags = ["Digital","Painting","Sculpture","Photography","Mixed"];
@@ -124,13 +125,24 @@ export default function ProfileSection({ profile, setEditOpen, uploadFile, onFol
               )}
             </div>
 
+            {/* Crea nuovo post */}
             {isMyProfile && (
-              <button onClick={() => setIsPostPopupOpen(true)}
-                className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
-                Crea una nuova Vibe
-              </button>
-            )}
-          </div>
+              <button
+              onClick={() => setIsPostPopupOpen(true)}
+              className="flex items-center gap-3 w-full max-w-full p-4 rounded-2xl shadow-md bg-white hover:bg-gray-100 transition-colors border border-gray-200 mx-[2px]"
+            >
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex justify-center items-center text-white">
+                <Plus />
+              </div>
+              <span className="text-gray-600 font-semibold">Crea nuovo post</span>
+            </button>
+            
+)}
+
+
+</div>
+
+    
 
           {/* --- Popup Nuova Vibe --- */}
           {isPostPopupOpen && (

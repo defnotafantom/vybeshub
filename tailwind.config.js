@@ -46,8 +46,30 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    plugin(function({ addUtilities, theme }) {
+      const newAnimations = {
+        '.animate-slide-in-right': {
+          animation: 'slideInRight 0.3s ease-out forwards',
+        },
+        '.animate-slide-in-left': {
+          animation: 'slideInLeft 0.3s ease-out forwards',
+        },
+      };
+      addUtilities(newAnimations, ['responsive', 'hover']);
+    }),
+    plugin(function({ addBase, theme }) {
+      addBase({
+        '@keyframes slideInRight': {
+          '0%': { opacity: '0', transform: 'translateX(50%)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        '@keyframes slideInLeft': {
+          '0%': { opacity: '0', transform: 'translateX(-50%)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+      });
+    }),
+  ],
 };
-
-
-
