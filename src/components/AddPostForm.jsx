@@ -1,28 +1,29 @@
-// AddPostForm.jsx
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-const AddPostForm = ({ onPostAdded, postToEdit, onPostUpdated }) => {
+const AddPostForm = ({ user, onPostAdded, postToEdit, onPostUpdated, artTags }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (postToEdit) {
-      setTitle(postToEdit.title);
-      setDescription(postToEdit.description);
-      setImageFile(null); // mantiene immagine esistente se non ne scegli una nuova
+      setTitle(postToEdit.title || "");
+      setDescription(postToEdit.description || "");
+      setImageFile(null);
+      setSelectedTags(postToEdit.art_tag ? postToEdit.art_tag.split(", ") : []);
     } else {
       setTitle("");
       setDescription("");
       setImageFile(null);
+      setSelectedTags([]);
     }
   }, [postToEdit]);
 
   const uploadImage = async () => {
     if (!imageFile) return postToEdit?.image_url || null;
-
     const fileExt = imageFile.name.split(".").pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
@@ -30,8 +31,8 @@ const AddPostForm = ({ onPostAdded, postToEdit, onPostUpdated }) => {
     const { data, error } = await supabase.storage
       .from("posts-images")
       .upload(filePath, imageFile, { upsert: true });
-
     if (error) throw error;
+
     const { publicUrl } = supabase.storage.from("posts-images").getPublicUrl(filePath);
     return publicUrl;
   };
@@ -39,34 +40,38 @@ const AddPostForm = ({ onPostAdded, postToEdit, onPostUpdated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const image_url = await uploadImage();
 
       if (postToEdit) {
-        // Aggiorna post esistente
         const { data, error } = await supabase
           .from("posts")
-          .update({ title, description, image_url })
+          .update({ title, description, image_url, art_tag: selectedTags.join(", ") })
           .eq("id", postToEdit.id)
           .single();
-
         if (error) throw error;
         onPostUpdated(data);
       } else {
-        // Crea nuovo post
         const { data, error } = await supabase
           .from("posts")
-          .insert([{ title, description, image_url, artist_id: supabase.auth.user().id }])
+          .insert([{
+            title,
+            description,
+            image_url,
+            art_tag: selectedTags.join(", "),
+            artist_id: user.id,
+            created_at: new Date()
+          }])
           .single();
-
         if (error) throw error;
         onPostAdded(data);
       }
 
+      // reset form
       setTitle("");
       setDescription("");
       setImageFile(null);
+      setSelectedTags([]);
     } catch (err) {
       console.error("Errore salvando post:", err.message);
       alert("Errore salvando post");
@@ -75,8 +80,16 @@ const AddPostForm = ({ onPostAdded, postToEdit, onPostUpdated }) => {
     }
   };
 
+  const toggleTag = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow mb-6 flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow flex flex-col gap-3">
       <input
         type="text"
         placeholder="Titolo"
@@ -99,6 +112,25 @@ const AddPostForm = ({ onPostAdded, postToEdit, onPostUpdated }) => {
         onChange={(e) => setImageFile(e.target.files[0])}
         className="border p-2 rounded"
       />
+
+      {/* Tag selezionabili */}
+      {artTags?.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {artTags.map(tag => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggleTag(tag)}
+              className={`px-3 py-1 rounded-full text-sm border transition ${
+                selectedTags.includes(tag) ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-800"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={loading}
@@ -111,5 +143,3 @@ const AddPostForm = ({ onPostAdded, postToEdit, onPostUpdated }) => {
 };
 
 export default AddPostForm;
-
-

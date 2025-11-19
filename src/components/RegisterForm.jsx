@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Music, Briefcase } from 'lucide-react';
+import { Music, Briefcase, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -187,11 +187,20 @@ const RegisterPage = ({ setAuthMode }) => {
 
       {/* Register form */}
       <motion.div
-        className="flex-none w-full md:w-[500px] max-h-[85vh] bg-white rounded-2xl shadow-xl p-8 border border-sky-100 overflow-auto"
+        className="flex-none w-full md:w-[500px] max-h-[85vh] bg-white rounded-2xl shadow-xl p-8 border border-sky-100 overflow-auto relative z-[21]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.4 }}
       >
+        {/* Freccia interna */}
+        <button
+          type="button"
+          onClick={() => setAuthMode('login')}
+          className="absolute top-4 left-4 flex items-center justify-center w-10 h-10 rounded-full bg-white border border-slate-300 shadow hover:bg-slate-50 transition z-50"
+        >
+          <ArrowLeft className="w-5 h-5 text-slate-700" />
+        </button>
+
         <div className="text-center space-y-4 pb-4">
           <h3 className="font-semibold text-lg text-slate-700">Quali ruoli vuoi assumere?</h3>
           <p className="text-slate-500">Puoi selezionare uno o entrambi i ruoli.</p>
@@ -260,6 +269,7 @@ const RegisterPage = ({ setAuthMode }) => {
             >
               {loading ? 'Registrazione in corso...' : 'REGISTRATI'}
             </Button>
+
             <Button
               type="button"
               variant="ghost"
@@ -276,13 +286,3 @@ const RegisterPage = ({ setAuthMode }) => {
 };
 
 export default RegisterPage;
-
-
-
-
-
-
-
-
-
-

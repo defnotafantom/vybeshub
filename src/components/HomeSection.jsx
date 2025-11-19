@@ -1,7 +1,7 @@
 // src/components/HomeSection.jsx
 import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
-import { Plus, Heart, MessageCircle, Share2, Inbox, X, Paperclip } from "lucide-react";
+import { Plus, Inbox, X, Paperclip } from "lucide-react";
 import NewPostPopup from "@/components/NewPostPopup";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -17,7 +17,7 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
   const [unreadCounts, setUnreadCounts] = useState({});
   const [newMessageNotif, setNewMessageNotif] = useState(false);
 
-  // Blocca scroll quando popup nuovo post aperto
+  // Blocca scroll del body quando popup aperto
   useEffect(() => {
     document.body.style.overflow = isPopupOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -31,18 +31,12 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
   ];
 
   const mockMessages = {
-    "1": [
-      { id: "m1", sender_id: "1", receiver_id: user.id, content: "Ciao! Come va?", created_at: new Date() }
-    ],
-    "2": [
-      { id: "m2", sender_id: "2", receiver_id: user.id, content: "Guarda questa immagine", file_url: "https://picsum.photos/200", created_at: new Date() }
-    ],
-    "3": [
-      { id: "m3", sender_id: "3", receiver_id: user.id, content: "Video test", file_url: "https://www.w3schools.com/html/mov_bbb.mp4", created_at: new Date() }
-    ]
+    "1": [ { id: "m1", sender_id: "1", receiver_id: user.id, content: "Ciao! Come va?", created_at: new Date() } ],
+    "2": [ { id: "m2", sender_id: "2", receiver_id: user.id, content: "Guarda questa immagine", file_url: "https://picsum.photos/200", created_at: new Date() } ],
+    "3": [ { id: "m3", sender_id: "3", receiver_id: user.id, content: "Video test", file_url: "https://www.w3schools.com/html/mov_bbb.mp4", created_at: new Date() } ]
   };
 
-  // Carica contatti di prova
+  // Carica contatti e unread
   useEffect(() => {
     setContacts(mockContacts);
     const initialUnread = {};
@@ -61,6 +55,7 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
 
   const sendMessage = async () => {
     if (!newMessage.trim() && !previewFile) return;
+
     let file_url = null;
     if (previewFile) file_url = await uploadFile(previewFile.file, "messages");
 
@@ -74,16 +69,13 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
     };
 
     setMessages(prev => [...prev, newMsg]);
-    setNewMessage(""); setPreviewFile(null);
+    setNewMessage("");
+    setPreviewFile(null);
   };
 
-  // Scroll automatico fluido
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollTo({
-        top: chatEndRef.current.scrollHeight,
-        behavior: "smooth"
-      });
+      chatEndRef.current.scrollTo({ top: chatEndRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [messages]);
 
@@ -97,7 +89,10 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
   return (
     <div className="flex justify-center w-full relative">
       <div className="w-full max-w-4xl p-4">
-        <div className="bg-gray-100/80 backdrop-blur-xl rounded-3xl shadow-2xl p-6 flex flex-col gap-4 border border-blue-200/40 max-h-[80vh] overflow-y-auto relative">
+        <div className={clsx(
+          "bg-gray-100/80 backdrop-blur-xl rounded-3xl shadow-2xl p-6 flex flex-col gap-4 border border-blue-200/40 max-h-[80vh] relative",
+          isPopupOpen ? "overflow-y-hidden" : "overflow-y-auto"
+        )}>
           {/* Pulsante "Crea nuovo post" */}
           <button onClick={() => setIsPopupOpen(true)}
             className="flex items-center gap-3 w-full p-4 rounded-2xl shadow-md bg-white hover:bg-gray-100 transition-colors border border-gray-200">
@@ -161,11 +156,9 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
         </div>
       </div>
 
-      {/* Pulsante Inbox flottante */}
-      <button onClick={toggleChat}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-blue-600 transition-colors"
-        title="Inbox">
-        {isChatOpen ? <X size={24}/> : <Inbox size={24}/> }
+      {/* Pulsante Inbox */}
+      <button onClick={toggleChat} className="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-blue-600 transition-colors" title="Inbox">
+        {isChatOpen ? <X size={24}/> : <Inbox size={24}/>}
       </button>
 
       {/* Mini-chat */}
@@ -185,9 +178,7 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
                     <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${c.online ? "bg-green-500" : "bg-gray-400"}`}></span>
                   </div>
                   <span className="font-semibold">{c.username}</span>
-                  {unreadCounts[c.id] > 0 && (
-                    <span className="absolute right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{unreadCounts[c.id]}</span>
-                  )}
+                  {unreadCounts[c.id] > 0 && <span className="absolute right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{unreadCounts[c.id]}</span>}
                 </button>
               ))}
             </div>
@@ -223,7 +214,6 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
                 {newMessageNotif && <p className="text-xs text-gray-500 text-center italic">Nuovi messaggi!</p>}
               </div>
 
-              {/* Footer */}
               <div className="p-2 border-t border-gray-300 flex flex-wrap items-center gap-2">
                 <button onClick={() => document.getElementById('fileInput')?.click()} 
                   className="flex-shrink-0 bg-gray-200 p-2 rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center">
@@ -257,6 +247,7 @@ const HomeSection = ({ posts, artTags, filterTag, setFilterTag, user, uploadFile
 };
 
 export default HomeSection;
+
 
 
 

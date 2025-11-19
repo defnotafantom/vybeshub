@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { AuthContext } from '@/context/AuthContext';
 import UserGreeting from '@/components/UserGreeting';
 import { supabase } from '@/lib/supabaseClient';
+import { ArrowLeft } from 'lucide-react';
 
 const LoginForm = ({ setAuthMode }) => {
   const { toast } = useToast();
@@ -57,11 +58,11 @@ const LoginForm = ({ setAuthMode }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     if (!supabase) {
       if (user) {
         login(user);
-        navigate('/dashboard'); // redirect qui
+        navigate('/dashboard');
       } else {
         toast({
           title: "🚧 Database non connesso!",
@@ -72,15 +73,16 @@ const LoginForm = ({ setAuthMode }) => {
       setLoading(false);
       return;
     }
-  
+
     const { error } = await signIn({
       email: formData.identifier,
       password: formData.password,
     });
-  
-    if (!error) navigate('/dashboard'); // redirect
+
+    if (!error) navigate('/dashboard');
     setLoading(false);
   };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -91,6 +93,14 @@ const LoginForm = ({ setAuthMode }) => {
         transition={{ duration: 0.5 }}
         className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-sky-100 relative max-w-md w-full"
       >
+        {/* Freccia per tornare alla home */}
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-4 left-4 text-slate-600 hover:text-slate-800"
+        >
+          <ArrowLeft size={24} />
+        </button>
+
         {showGreeting && user && <UserGreeting user={user} />}
 
         <motion.h2 className="text-2xl font-bold text-slate-800 mb-2 text-center">
@@ -109,7 +119,7 @@ const LoginForm = ({ setAuthMode }) => {
               placeholder="Inserisci username o email"
               value={formData.identifier}
               onChange={handleIdentifierChange}
-              className="bg-white"
+              className="bg-white rounded-xl"
               disabled={loading}
             />
           </div>
@@ -122,7 +132,7 @@ const LoginForm = ({ setAuthMode }) => {
               placeholder="Inserisci la tua password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="bg-white"
+              className="bg-white rounded-xl"
               disabled={loading}
             />
             <Link to="/forgot-password" className="block text-sm text-sky-600 hover:text-sky-700 mt-1">
