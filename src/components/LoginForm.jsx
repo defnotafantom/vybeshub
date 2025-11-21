@@ -119,7 +119,7 @@ const LoginForm = ({ setAuthMode }) => {
               placeholder="Inserisci username o email"
               value={formData.identifier}
               onChange={handleIdentifierChange}
-              className="bg-white rounded-xl"
+              className="bg-white"
               disabled={loading}
             />
           </div>
@@ -130,11 +130,13 @@ const LoginForm = ({ setAuthMode }) => {
               id="password"
               type="password"
               placeholder="Inserisci la tua password"
+              focus:placeholder-transparent
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="bg-white rounded-xl"
+              className="bg-white"
               disabled={loading}
             />
+
             <Link to="/forgot-password" className="block text-sm text-sky-600 hover:text-sky-700 mt-1">
               Hai dimenticato la password?
             </Link>
@@ -156,10 +158,15 @@ const LoginForm = ({ setAuthMode }) => {
               type="button"
               onClick={() => setAuthMode('register')}
               variant="outline"
-              className="w-full border-2 border-sky-400 text-sky-600 hover:bg-sky-50 font-semibold py-3"
+              className="w-full border-2 border-sky-400 bg-gradient-to-r from-sky-50 to-blue-50 text-sky-600 hover:text-sky-600 font-semibold py-3"
               disabled={loading}
             >
-              REGISTRATI
+              <span className="transition-all duration-200 
+                   hover:font-bold
+                   hover:text-sky-600 
+                   inline-block">
+    REGISTRATI
+  </span>
             </Button>
           </div>
         </form>

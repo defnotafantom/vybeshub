@@ -13,43 +13,62 @@ const HomePage = () => {
     <>
       <Helmet>
         <title>Vybes - Bridging Culture & Opportunity</title>
-        <meta name="description" content="Connetti artisti e stager. Gestisci il tuo profilo, annunci e notifiche su Vybes." />
+        <meta
+          name="description"
+          content="Connetti artisti e stager. Gestisci il tuo profilo, annunci e notifiche su Vybes."
+        />
       </Helmet>
 
-      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-sky-100/50 via-white to-blue-100/50 -z-10" />
-        
-        <div className="z-10 flex flex-col items-center justify-center flex-grow w-full">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-x-hidden overflow-y-visible">
+
+        {/* Background molto chiaro e animato */}
+        <motion.div
+          className="absolute inset-0 -z-10"
+          style={{
+            background: "linear-gradient(135deg, rgba(248, 252, 255, 0.2) 0%, rgb(223, 238, 252) 50%, rgb(202, 209, 211) 100%)",
+            backgroundSize: "400% 400%",
+          }}
+          animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+          transition={{ duration: 60, repeat: Infinity, repeatType: "loop", ease: "easeInOue" }}
+        />
+
+        {/* Wave con bolle dietro contenuti */}
+        <WaveAnimation />
+
+        <div className="z-10 flex flex-col items-center justify-center flex-grow w-full overflow-visible">
+
           <AnimatePresence mode="wait">
             {/* Landing Page */}
             {!authMode && (
               <motion.div
                 key="landing"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.6 }}
                 className="text-center space-y-8 max-w-2xl"
               >
                 <Logo />
 
+                {/* H1 con fade-in sequenziale parole */}
                 <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
                   className="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight"
                 >
-                  ARE YOU READY TO MAKE SOME NOISE?
+                  ARE <span className="text-blue-600">YOU</span> READY TO MAKE SOME <span className="text-sky-500">NOISE?</span>
                 </motion.h1>
 
+                {/* Pulsante ACCEDI con gradiente animato */}
                 <motion.button
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4, type: "spring", stiffness: 200, damping: 15 }}
+                  transition={{ delay: 0.01, type: "spring", stiffness: 200, damping: 15 }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setAuthMode('login')}
-                  className="px-12 py-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="px-12 py-4 rounded-full font-semibold shadow-lg text-white bg-gradient-to-r from-sky-500 to-blue-600 animate-gradient-x"
                 >
                   ACCEDI
                 </motion.button>
@@ -63,7 +82,7 @@ const HomePage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.35 }}
                 className="w-full max-w-md"
               >
                 <LoginForm setAuthMode={setAuthMode} />
@@ -85,22 +104,12 @@ const HomePage = () => {
             )}
           </AnimatePresence>
         </div>
-
-        <WaveAnimation />
       </div>
     </>
   );
 };
 
 export default HomePage;
-
-
-
-
-
-
-
-
 
 
 

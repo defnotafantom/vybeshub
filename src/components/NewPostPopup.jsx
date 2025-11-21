@@ -1,146 +1,72 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import React, { useState } from "react";
 
-export default function NewPostPopup({ isOpen, onClose, uploadFile, artTags, onPostSubmit }) {
+const NewPostPopup = ({ isOpen, onClose, uploadFile, artTags, onPostSubmit }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [tags, setTags] = useState([]);
   const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  // Blocca scroll quando il popup è aperto
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!file) return setPreviewUrl(null);
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  const handleTagToggle = (tag) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
+  if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    if (!title.trim() && !description.trim() && !file) return;
+    let fileUrl = null;
+    if (file) fileUrl = await uploadFile(file, "posts");
 
-    setLoading(true);
-    let uploadedUrl = null;
-    if (file && uploadFile) {
-      uploadedUrl = await uploadFile(file, "posts");
-    }
-
-    onPostSubmit({
-      title: title.trim(),
-      description: description.trim(),
-      tags: selectedTags,
-      fileUrl: uploadedUrl,
-    });
-
-    setTitle("");
-    setDescription("");
-    setSelectedTags([]);
-    setFile(null);
-    setLoading(false);
+    await onPostSubmit({ title, description, tags, fileUrl });
     onClose();
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div
-            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-          >
+    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+      <div className="bg-white w-full max-w-lg p-6 rounded-2xl shadow-xl">
+        <h2 className="text-xl font-bold mb-4">Nuovo Post</h2>
+
+        <input
+          type="text"
+          placeholder="Titolo"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          className="w-full p-2 border rounded-lg mb-3"
+        />
+
+        <textarea
+          placeholder="Descrizione"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          className="w-full p-2 border rounded-lg mb-3"
+        />
+
+        <label className="block mb-3">
+          File:
+          <input type="file" onChange={e => setFile(e.target.files[0])} className="mt-1" />
+        </label>
+
+        <p className="font-semibold mb-2">Tags</p>
+        <div className="flex gap-2 flex-wrap mb-4">
+          {artTags.map(tag => (
             <button
-              onClick={onClose}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+              key={tag.id}
+              onClick={() =>
+                setTags(prev => prev.includes(tag.name)
+                  ? prev.filter(t => t !== tag.name)
+                  : [...prev, tag.name])
+              }
+              className={`px-3 py-1 rounded-full border ${tags.includes(tag.name) ? "bg-blue-500 text-white" : "bg-gray-200"}`}
             >
-              <X />
+              {tag.name}
             </button>
+          ))}
+        </div>
 
-            <h2 className="text-xl font-bold mb-4 text-center">Crea nuovo post</h2>
-
-            <input
-              type="text"
-              placeholder="Titolo"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full mb-3 px-3 py-2 border rounded-lg"
-            />
-
-            <textarea
-              placeholder="Descrizione"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full mb-3 px-3 py-2 border rounded-lg resize-none"
-            />
-
-            <div className="flex flex-wrap gap-2 mb-3">
-              {artTags.map(tag => (
-                <button
-                  key={tag.id}
-                  onClick={() => handleTagToggle(tag.name)}
-                  className={`px-3 py-1 rounded-xl text-sm border transition-colors ${
-                    selectedTags.includes(tag.name)
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                  }`}
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-
-            <input
-              type="file"
-              accept="image/*,video/*"
-              onChange={(e) => setFile(e.target.files[0])}
-              className="mb-3 w-full"
-            />
-
-            {previewUrl && (
-              <div className="mb-3">
-                {file.type.startsWith("video")
-                  ? <video src={previewUrl} controls className="w-full max-h-60 rounded-lg" />
-                  : <img src={previewUrl} alt="preview" className="w-full max-h-60 rounded-lg" />
-                }
-              </div>
-            )}
-
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-xl shadow hover:shadow-lg transition-all"
-            >
-              {loading ? "Caricamento..." : "Pubblica"}
-            </button>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        <div className="flex justify-end gap-2">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">Annulla</button>
+          <button onClick={handleSubmit} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Pubblica</button>
+        </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default NewPostPopup;
 
 

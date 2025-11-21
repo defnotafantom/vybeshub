@@ -1,4 +1,3 @@
-// src/pages/DashboardLayout.jsx
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, Navigate } from "react-router-dom";
@@ -29,7 +28,7 @@ const DashboardLayout = () => {
   const [artTags, setArtTags] = useState([]);
   const [filterTag, setFilterTag] = useState("");
   const [profile, setProfile] = useState(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // controlla il popup
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   if (!user) return <Navigate to="/homepage" replace />;
 
@@ -159,9 +158,9 @@ const DashboardLayout = () => {
       <ProfileSection
         profile={profile}
         uploadFile={uploadFile}
-        currentUser={user}                  // l’utente loggato
-        isMyProfile={profile?.id === user?.id}  // controlla se è il tuo profilo
-        setEditOpen={() => setSection("EditProfile")} // se usi un modal
+        currentUser={user}
+        isMyProfile={profile?.id === user?.id}
+        setEditOpen={() => setSection("EditProfile")}
       />
     ),
     Inbox: <InboxSection user={user} uploadFile={uploadFile} />,
@@ -172,20 +171,34 @@ const DashboardLayout = () => {
     <div className="min-h-screen w-full relative bg-gradient-to-br from-gray-100 via-white to-gray-200 overflow-hidden flex">
       <div className="absolute inset-0 -z-10 opacity-60"><WaveAnimation /></div>
       <div className="hidden md:flex fixed top-0 left-0 h-full z-30">{SidebarContent}</div>
-      <div className={`flex-1 flex flex-col gap-2 p-4 transition-all duration-300 ml-64 ${isPopupOpen ? "overflow-hidden" : "overflow-auto"}`}>
-      <div className="w-full flex justify-center mt-2 text-lg font-bold text-2xl text-black-900 mt-4 tracking-tight">
-    {titles[section]}
-  </div>
-  <AnimatePresence mode="wait" initial={false}>
-    <motion.div key={section} initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} transition={{duration:0.3}}>
-      {sectionComponents[section]}
-    </motion.div>
-  </AnimatePresence>
+      <div className={`flex-1 flex flex-col gap-2 p-4 transition-all duration-300 ml-64`}>
+        <div className="w-full flex justify-center mt-2 text-lg font-bold text-2xl text-black-900 mt-4 tracking-tight">
+          {titles[section]}
+        </div>
 
-</div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={section}
+            initial={{opacity:0, x:20}}
+            animate={{opacity:1, x:0}}
+            exit={{opacity:0, x:-20}}
+            transition={{duration:0.3}}
+            className="flex-1 flex flex-col"
+          >
+            {section === "Home" ? (
+              <div className="flex-1 overflow-auto pb-[3px] scrollbar-thin scrollbar-thumb-sky-400 scrollbar-track-gray-200">
+                {sectionComponents[section]}
+              </div>
+            ) : (
+              sectionComponents[section]
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
 
 export default DashboardLayout;
+
 
