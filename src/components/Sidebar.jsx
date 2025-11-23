@@ -35,7 +35,7 @@ const Sidebar = ({ section, setSection, hover, setHover, onLogout }) => {
           </button>
         ))}
       </div>
-      <button onClick={onLogout} className="w-full h-12 mb-4 rounded-2xl shadow-md font-bold transition-all duration-300 bg-red-500 hover:bg-red-600 text-white">Logout</button>
+      <button onClick={onLogout} className="w-full h-12 mb-4 rounded-2xl shadow-md font-bold transition-all duration-300 bg-sky-500 hover:bg-sky-600 text-white">Logout</button>
     </div>
   );
 };
