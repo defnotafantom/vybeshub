@@ -40,9 +40,14 @@ module.exports = {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(4px)' },
         },
+        fadeInScale: {                   // <-- nuova animazione
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
         wavePulse: 'wavePulse 3s ease-in-out infinite',
+        'fade-in-scale': 'fadeInScale 0.35s ease-out forwards', // <-- uso diretto in componenti
       },
     },
   },
@@ -73,3 +78,4 @@ module.exports = {
     }),
   ],
 };
+
