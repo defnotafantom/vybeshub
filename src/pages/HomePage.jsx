@@ -12,7 +12,7 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Vybes - Bridging Culture & Opportunity</title>
+        <title>Vybes</title>
         <meta
           name="description"
           content="Connetti artisti e stager. Gestisci il tuo profilo, annunci e notifiche su Vybes."
@@ -29,7 +29,7 @@ const HomePage = () => {
             backgroundSize: "400% 400%",
           }}
           animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-          transition={{ duration: 60, repeat: Infinity, repeatType: "loop", ease: "easeInOue" }}
+          transition={{ duration: 60, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
         />
 
         {/* Wave con bolle dietro contenuti */}
