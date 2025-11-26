@@ -19,6 +19,3 @@ export default function Opportunities({ user }) {
     </div>
   );
 }
-
-
-

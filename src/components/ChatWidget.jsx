@@ -121,3 +121,4 @@ const ChatWidget = ({ user, uploadFile }) => {
 };
 
 export default ChatWidget;
+

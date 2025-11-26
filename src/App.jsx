@@ -4,46 +4,59 @@ import { useAuth } from './context/AuthContext';
 import DashboardLayout from './pages/DashboardLayout';
 import HomePage from './pages/HomePage';
 import TestSupabase from "@/pages/TestSupabase";
+import MaintenancePage from "@/pages/MaintenancePage";
+import { Toaster } from "react-hot-toast";
 
-// Lazy load map
-const MapViewItalia = React.lazy(() => import('./components/MapViewItalia.jsx'));
+const MapDashboard = React.lazy(() => import('@/components/Map/MapDashboard'));
+const Opportunities = React.lazy(() => import('@/components/Map/Opportunities'));
+
+const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { user, loading } = useAuth();
-
   if (loading) return <div>Loading auth...</div>;
 
-  return (
-    <Routes>
-      {/* Public */}
-      <Route path="/homepage" element={<HomePage />} />
-      <Route path="/test-supabase" element={<TestSupabase />} />
+  if (MAINTENANCE_MODE && !user) {
+    return (
+      <>
+        <Toaster position="top-right" />
+        <Routes>
+          <Route path="*" element={<MaintenancePage />} />
+        </Routes>
+      </>
+    );
+  }
 
-      {/* Protected */}
-      <Route
-        path="/dashboard"
-        element={user ? <DashboardLayout /> : <Navigate to="/homepage" replace />}
-      >
-        {/* Sub-routes INDEX */}
+  return (
+    <>
+      <Toaster position="top-right" />
+      <Routes>
+        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/test-supabase" element={<TestSupabase />} />
+
+        <Route path="/dashboard" element={user ? <DashboardLayout /> : <Navigate to="/homepage" replace />}>
+          <Route
+            index
+            element={
+              <Suspense fallback={<div className="p-4 text-center">Loading map...</div>}>
+                <MapDashboard user={user} />
+              </Suspense>
+            }
+          />
+        </Route>
+
         <Route
-          index
+          path="/opportunities"
           element={
-            <Suspense fallback={<div>Loading map...</div>}>
-              <MapViewItalia />
+            <Suspense fallback={<div className="p-4 text-center">Loading opportunità...</div>}>
+              <Opportunities user={user} />
             </Suspense>
           }
         />
 
-        {/* Example: altra pagina */}
-        {/*
-        <Route path="profile" element={<UserProfile />} />
-        <Route path="settings" element={<Settings />} />
-        */}
-      </Route>
-
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/homepage" replace />} />
-    </Routes>
+        <Route path="/" element={<Navigate to="/homepage" replace />} />
+      </Routes>
+    </>
   );
 }
 

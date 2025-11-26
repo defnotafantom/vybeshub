@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import HomeSection from "@/components/HomeSection/HomeSection";
 import { supabase } from "@/lib/supabaseClient";
-import MapViewItalia from "@/components/MapViewItalia";
+import MapDashboard from "@/components/Map/MapDashboard";
 
 const DashboardLayout = () => {
   const [section, setSection] = useState("Home");
@@ -21,7 +21,7 @@ const DashboardLayout = () => {
       <div className="flex-1 overflow-auto ml-20 md:ml-72 p-4">
         {section === "Home" && <HomeSection user={{ id: "me", user_metadata: {} }} />}
 
-        {section === "Mappa" && <MapViewItalia profile={{ role: "artist" }} />}
+        {section === "Mappa" && <MapDashboard profile={{ role: "artist" }} />}
 
         {section === "Opportunità" && <div>Sezione Opportunità</div>}
         {section === "Community" && <div>Sezione Community</div>}
