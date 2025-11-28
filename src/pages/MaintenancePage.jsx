@@ -7,10 +7,10 @@ import Logo from '@/components/Logo';
 import { FaUserShield } from 'react-icons/fa';
 import clsx from 'clsx';
 
+// Hook per larghezza finestra
 const useWindowWidth = () => {
-  const [width, setWidth] = useState(0);
+  const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
-    setWidth(window.innerWidth);
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -18,7 +18,7 @@ const useWindowWidth = () => {
   return width;
 };
 
-// FlipDigit
+// --- FlipDigit ---
 const FlipDigit = ({ value, colorClass }) => {
   const [prev, setPrev] = useState(value);
   useEffect(() => { if (prev !== value) setPrev(value); }, [value]);
@@ -39,30 +39,30 @@ const FlipDigit = ({ value, colorClass }) => {
       >
         {value.toString().padStart(2, '0')}
       </motion.div>
+      <div className="absolute w-full h-1/2 top-0 left-0 rounded-t-lg bg-gradient-to-b from-white/10 to-transparent shadow-inner"></div>
+      <div className="absolute w-full h-1/2 bottom-0 left-0 rounded-b-lg bg-gradient-to-t from-white/10 to-transparent shadow-inner"></div>
     </div>
   );
 };
 
-// Countdown
-const Countdown = ({ timeLeft }) => {
-  return (
-    <div className="flex flex-wrap justify-center gap-4 mt-3">
-      {[
-        ['Days', timeLeft.days, 'text-blue-400'],
-        ['Hours', timeLeft.hours, 'text-blue-300'],
-        ['Minutes', timeLeft.minutes, 'text-sky-200'],
-        ['Seconds', timeLeft.seconds, 'text-sky-100'],
-      ].map(([label, value, color]) => (
-        <div key={label} className="flex flex-col items-center">
-          <FlipDigit value={value} colorClass={color} />
-          <span className="text-sm md:text-base text-white">{label}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
+// --- Countdown ---
+const Countdown = ({ timeLeft }) => (
+  <div className="flex flex-wrap justify-center gap-4 mt-3">
+    {[
+      ['Days', timeLeft.days, 'text-blue-400'],
+      ['Hours', timeLeft.hours, 'text-blue-300'],
+      ['Minutes', timeLeft.minutes, 'text-sky-200'],
+      ['Seconds', timeLeft.seconds, 'text-sky-100'],
+    ].map(([label, value, color]) => (
+      <div key={label} className="flex flex-col items-center">
+        <FlipDigit value={value} colorClass={color} />
+        <span className="text-sm md:text-base text-white">{label}</span>
+      </div>
+    ))}
+  </div>
+);
 
-// StaffLogin
+// --- StaffLogin ---
 const StaffLogin = () => {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
@@ -133,11 +133,37 @@ const StaffLogin = () => {
             onSubmit={handleLogin}
             className="w-64 flex flex-col space-y-3 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/30 mt-2 z-50 relative"
           >
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"/>
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button type="submit" disabled={loading} className="py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50">{loading ? 'Loading...' : 'Accedi'}</button>
-            <button type="button" onClick={() => setShowForm(false)} className="mt-2 text-sm text-gray-600 underline">Chiudi</button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {loading ? 'Loading...' : 'Accedi'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="mt-2 text-sm text-gray-600 underline"
+            >
+              Chiudi
+            </button>
           </motion.form>
         )}
       </AnimatePresence>
@@ -145,7 +171,7 @@ const StaffLogin = () => {
   );
 };
 
-// MaintenancePage
+// --- MaintenancePage ---
 const MaintenancePage = () => {
   const width = useWindowWidth();
   const isMobile = width < 768;
@@ -154,7 +180,28 @@ const MaintenancePage = () => {
   const launchDate = new Date();
   launchDate.setDate(launchDate.getDate() + 5);
 
+  // Log visita avanzata in Supabase
   useEffect(() => {
+    const logVisit = async () => {
+      try {
+        await supabase.from('visits').insert([{
+          page: window.location.pathname,
+          user_agent: navigator.userAgent,
+          device_type: window.innerWidth < 768 ? 'mobile' : 'desktop',
+          screen_width: window.innerWidth,
+          screen_height: window.innerHeight,
+          referrer: document.referrer || null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          visited_at: new Date(),
+          session_id: crypto.randomUUID(),
+        }]);
+      } catch (err) {
+        console.error('Errore logging visita:', err);
+      }
+    };
+
+    logVisit();
+
     const timer = setInterval(() => {
       const diff = launchDate - new Date();
       setTimeLeft({
@@ -164,15 +211,16 @@ const MaintenancePage = () => {
         seconds: Math.max(Math.floor((diff / 1000) % 60), 0),
       });
     }, 1000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [isMobile, launchDate]);
 
   return (
     <div className="min-h-screen w-full relative bg-gray-900 overflow-hidden">
-      {/* Wave e bolle in background */}
+      {/* Wave e bolle */}
       <WaveAnimation className="absolute top-0 left-0 w-full h-full z-0" />
 
-      {/* CONTENITORE PRINCIPALE IN PRIMO PIANO */}
+      {/* Contenitore principale in primo piano */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -195,6 +243,7 @@ const MaintenancePage = () => {
 };
 
 export default MaintenancePage;
+
 
 
 
