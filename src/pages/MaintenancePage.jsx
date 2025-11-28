@@ -5,174 +5,197 @@ import { supabase } from '@/lib/supabaseClient';
 import WaveAnimation from '@/components/WaveAnimation';
 import Logo from '@/components/Logo';
 import { FaUserShield } from 'react-icons/fa';
+import clsx from 'clsx';
 
-const MaintenancePage = () => {
+const useWindowWidth = () => {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    setWidth(window.innerWidth);
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return width;
+};
+
+// FlipDigit
+const FlipDigit = ({ value, colorClass }) => {
+  const [prev, setPrev] = useState(value);
+  useEffect(() => { if (prev !== value) setPrev(value); }, [value]);
+
+  return (
+    <div className="relative w-12 h-16 md:w-16 md:h-20 perspective">
+      <motion.div
+        key={value}
+        initial={{ rotateX: -90 }}
+        animate={{ rotateX: 0 }}
+        exit={{ rotateX: 90 }}
+        transition={{ duration: 0.4, ease: 'easeInOut' }}
+        className={clsx(
+          'absolute w-full h-full flex items-center justify-center font-bold text-white rounded-lg shadow-lg bg-gradient-to-br from-gray-800 to-gray-900',
+          colorClass
+        )}
+        style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 0 6px rgba(255,255,255,0.1)' }}
+      >
+        {value.toString().padStart(2, '0')}
+      </motion.div>
+    </div>
+  );
+};
+
+// Countdown
+const Countdown = ({ timeLeft }) => {
+  return (
+    <div className="flex flex-wrap justify-center gap-4 mt-3">
+      {[
+        ['Days', timeLeft.days, 'text-blue-400'],
+        ['Hours', timeLeft.hours, 'text-blue-300'],
+        ['Minutes', timeLeft.minutes, 'text-sky-200'],
+        ['Seconds', timeLeft.seconds, 'text-sky-100'],
+      ].map(([label, value, color]) => (
+        <div key={label} className="flex flex-col items-center">
+          <FlipDigit value={value} colorClass={color} />
+          <span className="text-sm md:text-base text-white">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// StaffLogin
+const StaffLogin = () => {
   const navigate = useNavigate();
+  const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Data di lancio: 5 giorni da ora
-  const launchDate = new Date();
-  launchDate.setDate(launchDate.getDate() + 5);
-
-  // Funzione calcolo countdown
-  const calculateTimeLeft = () => {
-    const now = new Date();
-    const diff = launchDate - now;
-    return {
-      days: Math.max(Math.floor(diff / (1000 * 60 * 60 * 24)), 0),
-      hours: Math.max(Math.floor((diff / (1000 * 60 * 60)) % 24), 0),
-      minutes: Math.max(Math.floor((diff / (1000 * 60)) % 60), 0),
-      seconds: Math.max(Math.floor((diff / 1000) % 60), 0),
-    };
-  };
-
-  useEffect(() => {
-    setTimeLeft(calculateTimeLeft());
-    const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Login Supabase
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      console.log('Supabase login response:', data, error);
-
-      if (error) {
-        setError(error.message);
-      } else if (data.user) {
-        setShowSuccess(true);
+      if (error) setError(error.message);
+      else if (data.user) {
+        setSuccess(true);
         setTimeout(() => navigate('/dashboard'), 1200);
-      } else {
-        setError('Login failed. Check your credentials.');
-      }
+      } else setError('Login failed. Check your credentials.');
     } catch (err) {
-      console.error(err);
       setError('Unexpected error during login.');
+      console.error(err);
     }
+    setLoading(false);
   };
 
-  const renderTimeBlock = (value, label, colorClass) => (
-    <div className="flex flex-col items-center">
-      <motion.span
-        key={value}
-        initial={{ y: -10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 10, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className={`font-bold text-4xl md:text-5xl ${colorClass}`}
-      >
-        {value.toString().padStart(2, '0')}
-      </motion.span>
-      <span className="text-sm md:text-base text-white">{label}</span>
+  return (
+    <div className="flex flex-col items-center mt-4 md:mt-6 z-50 relative">
+      <div className="flex items-center space-x-1 text-white font-bold">
+        <FaUserShield />
+        <span>STAFF ONLY</span>
+      </div>
+
+      {!showForm && (
+        <motion.button
+          onClick={() => setShowForm(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mt-2 z-50 relative"
+        >
+          Login
+        </motion.button>
+      )}
+
+      <AnimatePresence>
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="mt-2 px-3 py-1 bg-green-500 text-white rounded-full text-sm font-semibold shadow-lg z-50 relative"
+          >
+            Login successful!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showForm && (
+          <motion.form
+            key="login"
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            transition={{ duration: 0.4, type: 'spring', stiffness: 120 }}
+            onSubmit={handleLogin}
+            className="w-64 flex flex-col space-y-3 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/30 mt-2 z-50 relative"
+          >
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <button type="submit" disabled={loading} className="py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50">{loading ? 'Loading...' : 'Accedi'}</button>
+            <button type="button" onClick={() => setShowForm(false)} className="mt-2 text-sm text-gray-600 underline">Chiudi</button>
+          </motion.form>
+        )}
+      </AnimatePresence>
     </div>
   );
+};
+
+// MaintenancePage
+const MaintenancePage = () => {
+  const width = useWindowWidth();
+  const isMobile = width < 768;
+
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const launchDate = new Date();
+  launchDate.setDate(launchDate.getDate() + 5);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const diff = launchDate - new Date();
+      setTimeLeft({
+        days: Math.max(Math.floor(diff / (1000 * 60 * 60 * 24)), 0),
+        hours: Math.max(Math.floor((diff / (1000 * 60 * 60)) % 24), 0),
+        minutes: Math.max(Math.floor((diff / (1000 * 60)) % 60), 0),
+        seconds: Math.max(Math.floor((diff / 1000) % 60), 0),
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-gray-900 p-4">
-      <WaveAnimation />
+    <div className="min-h-screen w-full relative bg-gray-900 overflow-hidden">
+      {/* Wave e bolle in background */}
+      <WaveAnimation className="absolute top-0 left-0 w-full h-full z-0" />
 
-      {/* Countdown centrale */}
-      <div className="z-10 flex flex-col items-center justify-center space-y-4">
-        <Logo />
-        <p className="text-white text-lg md:text-xl font-semibold">
-          Approximately 5 days left
-        </p>
-        <div className="flex justify-center space-x-6 md:space-x-8 mt-2">
-          {renderTimeBlock(timeLeft.days, "Days", "text-blue-400")}
-          {renderTimeBlock(timeLeft.hours, "Hours", "text-blue-300")}
-          {renderTimeBlock(timeLeft.minutes, "Minutes", "text-sky-200")}
-          {renderTimeBlock(timeLeft.seconds, "Seconds", "text-sky-100")}
+      {/* CONTENITORE PRINCIPALE IN PRIMO PIANO */}
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, type: 'spring', stiffness: 100, damping: 20 }}
+        className="relative z-50 flex flex-col items-center justify-start px-4"
+        style={{ marginTop: isMobile ? '10vh' : '5vh' }}
+      >
+        <div className="flex flex-col items-center space-y-4 text-center w-full max-w-md">
+          <Logo />
+          <p className="text-white text-lg md:text-xl font-semibold mt-2">Approximately 5 days left</p>
+          <Countdown timeLeft={timeLeft} />
+          <p className="mt-4 px-4 py-2 bg-yellow-500/80 text-black rounded-lg font-semibold text-sm md:text-base text-center shadow-lg z-50 relative">
+            🚧 La versione mobile del sito è in fase di sviluppo
+          </p>
+          <StaffLogin />
         </div>
-      </div>
-
-      {/* Pulsante STAFF ONLY e login */}
-      <div className="absolute top-1/2 right-4 md:right-10 transform -translate-y-1/2 flex flex-col items-center space-y-2 z-20">
-        <div className="flex items-center space-x-1 text-white font-bold">
-          <FaUserShield />
-          <span>STAFF ONLY</span>
-        </div>
-
-        {!showLoginForm && (
-          <button
-            onClick={() => setShowLoginForm(true)}
-            className="py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Login
-          </button>
-        )}
-
-        {/* Popup login successo */}
-        <AnimatePresence>
-          {showSuccess && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="mt-2 px-3 py-1 bg-green-500 text-white rounded-full text-sm font-semibold shadow-lg"
-            >
-              Login successful!
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Form login */}
-        <AnimatePresence>
-          {showLoginForm && (
-            <motion.form
-              key="login"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.35 }}
-              onSubmit={handleLogin}
-              className="w-64 flex flex-col space-y-3 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/30 mt-2"
-            >
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-              <button
-                type="submit"
-                className="py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-              >
-                Accedi
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowLoginForm(false)}
-                className="mt-2 text-sm text-gray-600 underline"
-              >
-                Chiudi
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
 export default MaintenancePage;
+
+
+
 
